@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bedrock Redstone 3D Schematic Maker & Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Reset & Core Setup */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            height: 100%;
+            background-color: #0c0a09;
+            color: #f5f5f4;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+        .flex-col {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Font style */
+        .font-minecraft {
+            font-family: 'Courier Prime', monospace;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1c1917;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #44403c;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #78716c;
+        }
+
+        /* Header Styling */
+        .app-header {
+            background-color: #1c1917;
+            border-bottom: 1px solid #292524;
+            padding: 12px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            user-select: none;
+        }
+        @media (min-width: 1024px) {
+            .app-header {
+                flex-direction: row;
+            }
+        }
+        .header-logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-badge {
+            background-color: #dc2626;
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .logo-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: #ef4444;
+        }
+        .logo-subtitle {
+            font-size: 10px;
+            color: #a8a29e;
+        }
+
+        /* Simulation Control bar */
+        .sim-controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            background-color: #0c0a09;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #292524;
+        }
+        .speed-control-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-label {
+            font-size: 0.75rem;
+            color: #a8a29e;
+        }
+        .speed-slider {
+            width: 96px;
+            accent-color: #dc2626;
+            background-color: #292524;
+            border-radius: 8px;
+            appearance: none;
+            height: 8px;
+            cursor: pointer;
+        }
+        .speed-val-label {
+            font-size: 0.75rem;
+            color: #e7e5e4;
+        }
+        .controls-separator {
+            height: 20px;
+            width: 1px;
+            background-color: #292524;
+            display: none;
+        }
+        @media (min-width: 768px) {
+            .controls-separator {
+                display: block;
+            }
+        }
+        .buttons-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Buttons general */
+        .btn {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: background-color 0.15s ease-in-out;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-emerald {
+            background-color: #059669;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .btn-emerald:hover {
+            background-color: #10b981;
+        }
+        .btn-amber {
+            background-color: #d97706;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .btn-amber:hover {
+            background-color: #f59e0b;
+        }
+        .btn-stone {
+            background-color: #292524;
+            color: #d6d3d1;
+            border: 1px solid #44403c;
+        }
+        .btn-stone:hover {
+            background-color: #44403c;
+        }
+        .btn-red-outline {
+            background-color: #450a0a;
+            color: #f87171;
+            border: 1px solid rgba(127, 29, 29, 0.5);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .btn-red-outline:hover {
+            background-color: #7f1d1d;
+        }
+
+        /* Right Header section shortcuts */
+        .header-right-shortcuts {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .shortcut-text {
+            font-size: 10px;
+            color: #a8a29e;
+            margin-right: 8px;
+            display: none;
+        }
+        @media (min-width: 1280px) {
+            .shortcut-text {
+                display: inline;
+            }
+        }
+        kbd {
+            padding: 2px 6px;
+            background-color: #292524;
+            border-radius: 4px;
+            border: 1px solid #44403c;
+        }
+
+        /* Layout grid container */
+        .workspace-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Left Sidebar */
+        .sidebar-panel {
+            width: 320px;
+            background-color: #1c1917;
+            border-right: 1px solid #292524;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow-y: auto;
+            padding: 16px;
+            user-select: none;
+            flex-shrink: 0;
+        }
+        .panel-sections-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Titles */
+        .sidebar-section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #a8a29e;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        /* Selector */
+        .preset-dropdown {
+            width: 100%;
+            background-color: #0c0a09;
+            border: 1px solid #292524;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.75rem;
+            color: #e7e5e4;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .preset-dropdown:focus {
+            border-color: #dc2626;
+        }
+
+        /* Editing mode button group */
+        .edit-mode-grid {
+            display: grid;
+            grid-template-cols: repeat(3, minmax(0, 1fr));
+            gap: 4px;
+            background-color: #0c0a09;
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid #292524;
+        }
+        .edit-mode-btn {
+            font-size: 11px;
+            padding: 6px 0;
+            font-weight: 600;
+            border-radius: 4px;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.15s, color 0.15s;
+            background: transparent;
+            color: #a8a29e;
+        }
+        .edit-mode-btn:hover {
+            color: #e7e5e4;
+        }
+        .edit-mode-btn.active {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        /* Layer configuration */
+        .layer-card {
+            background-color: #0c0a09;
+            border: 1px solid #292524;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .layer-info-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #d6d3d1;
+        }
+        .active-layer-badge {
+            font-weight: 700;
+            color: #ef4444;
+        }
+        .layer-slider {
+            width: 100%;
+            accent-color: #dc2626;
+            background-color: #292524;
+            border-radius: 8px;
+            appearance: none;
+            height: 6px;
+            cursor: pointer;
+        }
+
+        /* Grid layout for block inventory palette */
+        .palette-grid {
+            display: grid;
+            grid-template-cols: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+        }
+        .block-btn {
+            background-color: #0c0a09;
+            border: 1px solid #292524;
+            border-radius: 4px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s;
+        }
+        .block-btn:hover {
+            background-color: #1c1917;
+        }
+        .block-btn.active {
+            background-color: #292524;
+            border: 2px solid #ef4444;
+        }
+        .block-icon-frame {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Block Frame Specific Colors */
+        .frame-solid { background-color: #4b5563; border: 1px solid #6b7280; }
+        .frame-redstone-block { background-color: #991b1b; border: 1px solid #dc2626; }
+        .frame-dust { background-color: #1c1917; border: 1px solid #450a0a; }
+        .frame-torch { background-color: #1c1917; border: 1px solid #78350f; }
+        .frame-repeater { background-color: #1c1917; border: 1px solid #44403c; }
+        .frame-lever { background-color: #1c1917; border: 1px solid #450a0a; }
+        .frame-piston { background-color: #1c1917; border: 1px solid #78350f; }
+        .frame-sticky-piston { background-color: #1c1917; border: 1px solid #064e3b; }
+
+        .block-name {
+            font-size: 9px;
+            color: #d6d3d1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Attributes settings wrapper */
+        .attributes-card {
+            background-color: #0c0a09;
+            border: 1px solid #292524;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .attributes-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #a8a29e;
+        }
+        .attributes-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+        }
+        .attributes-row.hidden {
+            display: none;
+        }
+        .attribute-label {
+            color: #a8a29e;
+        }
+        .attribute-select {
+            background-color: #1c1917;
+            border: 1px solid #292524;
+            color: #d6d3d1;
+            font-size: 11px;
+            padding: 4px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        /* Sidebar footer section guide */
+        .sidebar-footer {
+            padding-top: 16px;
+            border-top: 1px solid #292524;
+            font-size: 11px;
+            color: #a8a29e;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .footer-title {
+            font-weight: 700;
+            color: #d6d3d1;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+        }
+        .footer-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .footer-val {
+            color: #e7e5e4;
+            font-weight: 500;
+        }
+
+        /* Main view column */
+        .viewport-main {
+            flex: 1;
+            position: relative;
+            background-color: #0c0a09;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HUD Stats boxes */
+        .hud-wrapper {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 10;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            pointer-events: none;
+            user-select: none;
+        }
+        .hud-stat-box {
+            background-color: rgba(28, 25, 23, 0.9);
+            backdrop-filter: blur(4px);
+            border: 1px solid #292524;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .hud-label-grid { color: #ef4444; font-weight: 700; }
+        .hud-label-ticks { color: #f59e0b; font-weight: 700; }
+        .hud-val { color: #d6d3d1; }
+        .hud-val-light { color: #e7e5e4; }
+
+        /* Floating simulation active banner */
+        .sim-banner-float {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background-color: #059669;
+            border: 1px solid #10b981;
+            color: white;
+            font-size: 0.75rem;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            animation: bounce 1s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% {
+                transform: translate(-50%, 0);
+                animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+            }
+            50% {
+                transform: translate(-50%, -25%);
+                animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+            }
+        }
+        .banner-ping-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+            background-color: white;
+            animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        @keyframes ping {
+            75%, 100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* Container holding the WebGL canvas */
+        #canvas-container {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        /* Bottom dynamic info banner */
+        .bottom-info-banner {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background-color: rgba(28, 25, 23, 0.9);
+            backdrop-filter: blur(4px);
+            border: 1px solid #292524;
+            padding: 10px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            max-width: 512px;
+            width: calc(100% - 32px);
+            font-size: 0.75rem;
+            color: #d6d3d1;
+            pointer-events: none;
+            user-select: none;
+        }
+        .bottom-info-inner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-pulse-icon {
+            color: #ef4444;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* JS Compatibility Helpers */
+        .hidden { display: none !important; }
+        .flex { display: flex !important; }
+    </style>
+</head>
+<body class="flex-col">
+
+    <header class="app-header">
+        <div class="header-logo-section">
+            <div class="logo-badge">
+                <i class="fa-solid fa-square-rss" style="font-size: 1.25rem;"></i>
+            </div>
+            <div>
+                <h1 class="logo-title font-minecraft">BEDROCK REDSTONE 3D</h1>
+                <p class="logo-subtitle">Multi-Layer Schematic Builder & Redstone Tick Simulator</p>
+            </div>
+        </div>
+
+        <div class="sim-controls-bar">
+            <div class="speed-control-wrapper">
+                <span class="control-label font-minecraft">SPEED:</span>
+                <input type="range" id="sim-speed" min="1" max="40" value="20" class="speed-slider">
+                <span id="speed-label" class="speed-val-label font-minecraft">20 T/S</span>
+            </div>
+            <div class="controls-separator"></div>
+            <div class="buttons-group">
+                <button id="btn-play" class="btn btn-emerald">
+                    <i class="fa-solid fa-play"></i> START
+                </button>
+                <button id="btn-pause" class="btn btn-amber hidden">
+                    <i class="fa-solid fa-pause"></i> PAUSE
+                </button>
+                <button id="btn-step" class="btn btn-stone">
+                    <i class="fa-solid fa-forward-step"></i> TICK STEP
+                </button>
+                <button id="btn-reset" class="btn btn-stone">
+                    <i class="fa-solid fa-rotate-left"></i> RESET
+                </button>
+            </div>
+        </div>
+
+        <div class="header-right-shortcuts">
+            <span class="shortcut-text font-minecraft"><kbd class="font-minecraft">R</kbd> Rotate block direction</span>
+            <button id="btn-clear" class="btn btn-red-outline">
+                <i class="fa-solid fa-trash-can"></i> Clear Grid
+            </button>
+        </div>
+    </header>
+
+    <div class="workspace-container">
+        
+        <aside class="sidebar-panel">
+            
+            <div class="panel-sections-container">
+                <div>
+                    <h3 class="sidebar-section-title font-minecraft">DEMO SCHEMATICS</h3>
+                    <select id="preset-selector" class="preset-dropdown">
+                        <option value="">-- Select Redstone Schematic --</option>
+                        <option value="repeater_clock">Repeater Clock (Infinite Loop)</option>
+                        <option value="xor_gate">Logic XOR Gate (Bedrock Design)</option>
+                        <option value="piston_extender">Piston Extender Showcase</option>
+                        <option value="rs_nor_latch">RS-NOR Latch (1-Bit Memory)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <h3 class="sidebar-section-title font-minecraft">EDITING TOOL MODE</h3>
+                    <div class="edit-mode-grid">
+                        <button id="tool-place" class="edit-mode-btn active">
+                            <i class="fa-solid fa-hammer" style="margin-bottom: 4px;"></i>
+                            Build
+                        </button>
+                        <button id="tool-interact" class="edit-mode-btn">
+                            <i class="fa-solid fa-toggle-on" style="margin-bottom: 4px;"></i>
+                            Interact
+                        </button>
+                        <button id="tool-destroy" class="edit-mode-btn">
+                            <i class="fa-solid fa-eraser" style="margin-bottom: 4px;"></i>
+                            Destroy
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="sidebar-section-title font-minecraft">ACTIVE LAYER (Y)</h3>
+                    <div class="layer-card">
+                        <div class="layer-info-row">
+                            <span>Focus Height Plane:</span>
+                            <span id="active-layer-lbl" class="active-layer-badge font-minecraft">0</span>
+                        </div>
+                        <input type="range" id="active-layer" min="0" max="7" value="0" class="layer-slider">
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="sidebar-section-title font-minecraft">BLOCK PALETTE</h3>
+                    <div class="palette-grid" id="block-palette">
+                        <button class="block-btn active" data-block-type="solid">
+                            <div class="block-icon-frame frame-solid">
+                                <i class="fa-solid fa-cube" style="color: #d6d3d1; font-size: 1.125rem;"></i>
+                            </div>
+                            <span class="block-name">Solid</span>
+                        </button>
+                        <button class="block-btn" data-block-type="redstone_block">
+                            <div class="block-icon-frame frame-redstone-block">
+                                <i class="fa-solid fa-square" style="color: #f87171; font-size: 1.125rem;"></i>
+                            </div>
+                            <span class="block-name">Red Block</span>
+                        </button>
+                        <button class="block-btn" data-block-type="dust">
+                            <div class="block-icon-frame frame-dust">
+                                <i class="fa-solid fa-wave-square" style="color: #ef4444; font-size: 1.125rem;"></i>
+                            </div>
+                            <span class="block-name">Dust</span>
+                        </button>
+                        <button class="block-btn" data-block-type="torch">
+                            <div class="block-icon-frame frame-torch">
+                                <i class="fa-solid fa-circle-nodes" style="color: #f59e0b; font-size: 1.125rem;"></i>
+                            </div>
+                            <span class="block-name">Torch</span>
+                        </button>
+                        <button class="block-btn" data-block-type="repeater">
+                            <div class="block-icon-frame frame-repeater">
+                                <i class="fa-solid fa-forward" style="color: #a8a29e; font-size: 1.125rem;"></i>
+                            </div>
+                            <span class="block-name">Repeater</span>
+                        </button>
+                        <button class="block-btn" data-block-type="lever">
+                            <div class="block-icon-frame frame-lever">
+                                <i class="fa-solid fa-sliders" style="color: #a8a29e; font-size: 1.125rem;"></i>
+                            </div>
+                            <span class="block-name">Lever</span>
+                        </button>
+                        <button class="block-btn" data-block-type="piston">
+                            <div class="block-icon-frame frame-piston">
+                                <i class="fa-solid fa-arrows-up-down" style="color: #b45309; font-size: 1.125rem;"></i>
+                            </div>
+                            <span class="block-name">Piston</span>
+                        </button>
+                        <button class="block-btn" data-block-type="sticky_piston">
+                            <div class="block-icon-frame frame-sticky-piston">
+                                <i class="fa-solid fa-arrows-up-down" style="color: #10b981; font-size: 1.125rem;"></i>
+                            </div>
+                            <span class="block-name">Sticky P.</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="attributes-card">
+                    <h4 class="attributes-title font-minecraft">ORIENTATION & DELAY</h4>
+                    <div class="attributes-row">
+                        <span class="attribute-label">Direction Facing:</span>
+                        <select id="placement-direction" class="attribute-select">
+                            <option value="north">North (-Z)</option>
+                            <option value="south">South (+Z)</option>
+                            <option value="east">East (+X)</option>
+                            <option value="west">West (-X)</option>
+                            <option value="up">Up (+Y)</option>
+                            <option value="down">Down (-Y)</option>
+                        </select>
+                    </div>
+                    <div id="delay-config-row" class="attributes-row hidden">
+                        <span class="attribute-label">Repeater Ticks:</span>
+                        <select id="repeater-delay" class="attribute-select">
+                            <option value="1">1 Tick (0.1s)</option>
+                            <option value="2">2 Ticks (0.2s)</option>
+                            <option value="3">3 Ticks (0.3s)</option>
+                            <option value="4">4 Ticks (0.4s)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <p class="footer-title"><i class="fa-solid fa-keyboard" style="margin-right: 4px; color: #ef4444;"></i> QUICK SHORTCUTS</p>
+                <div class="footer-row"><span>Left Click:</span> <span class="footer-val">Use Active Tool</span></div>
+                <div class="footer-row"><span>Interact Tool:</span> <span class="footer-val">Toggle Levers / Ticks</span></div>
+                <div class="footer-row"><span>Shift + Click:</span> <span class="footer-val">Quick Interact</span></div>
+                <div class="footer-row"><span>Right Click:</span> <span class="footer-val">Instant Destroy</span></div>
+                <div class="footer-row"><span>[ R ] Key:</span> <span class="footer-val">Cycle Rotation</span></div>
+            </div>
+        </aside>
+
+        <main class="viewport-main">
+            <div class="hud-wrapper">
+                <div class="hud-stat-box font-minecraft">
+                    <span class="hud-label-grid font-minecraft">GRID:</span>
+                    <span class="hud-val">12 x 8 x 12</span>
+                </div>
+                <div class="hud-stat-box font-minecraft">
+                    <span class="hud-label-ticks font-minecraft">TICKS:</span>
+                    <span id="sim-tick-count" class="hud-val-light">0</span>
+                </div>
+            </div>
+
+            <div id="sim-banner" class="sim-banner-float font-minecraft">
+                <span class="banner-ping-dot"></span>
+                BEDROCK SIMULATION ACTIVE
+            </div>
+
+            <div id="canvas-container"></div>
+
+            <div class="bottom-info-banner">
+                <div class="bottom-info-inner">
+                    <i class="fa-solid fa-layer-group info-pulse-icon"></i>
+                    <span id="dynamic-instruction">Single-Layer Mode: Build, interact, and replace blocks strictly at the active Y layer.</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        const GRID_W = 12;
+        const GRID_H = 8;
+        const GRID_D = 12;
+
+        let scene, camera, renderer, controls;
+        let activeBlockType = 'solid';
+        let placementDir = 'north';
+        let repeaterDelay = 1;
+        let currentLayer = 0;
+        let activeToolMode = 'place'; // 'place', 'interact', 'destroy'
+
+        // Grid storage container
+        let grid = {};
+        let meshes = {}; // Key: "x,y,z" -> ThreeJS Group
+
+        // Interactive simulation variables
+        let isSimulating = false;
+        let simInterval = null;
+        let currentTick = 0;
+        let preSimBackup = null; 
+
+        // Interactive raycasting & hover selection helpers
+        let hoverMeshContainer = null; 
+        let hoverGridCoord = null;
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+        let editPlaneMesh = null;
+
+        let pointerDownTime = 0;
+        const pointerDownPos = new THREE.Vector2();
+
+        // Color palettes
+        const COLORS = {
+            stone: 0x6e6e6e,
+            stoneBorders: 0x505050,
+            redstoneOff: 0x3d0000,
+            redstoneOn: 0xff1a1a,
+            dustOff: 0x660000,
+            dustOn: 0xff3333,
+            torchOff: 0x5a1818,
+            torchOn: 0xff5555,
+            pistonBase: 0x4d3e33,
+            pistonWood: 0xa17042,
+            stickyGreen: 0x3bb143
+        };
+
+        function initScene() {
+            const container = document.getElementById('canvas-container');
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0908); 
+
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(15, 10, 15);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 - 0.05; 
+            controls.target.set(GRID_W/2 - 0.5, GRID_H/4, GRID_D/2 - 0.5);
+
+            controls.mouseButtons = {
+                LEFT: THREE.MOUSE.ROTATE,
+                MIDDLE: THREE.MOUSE.DOLLY,
+                RIGHT: THREE.MOUSE.NONE 
+            };
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.75);
+            dirLight.position.set(20, 35, 15);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            const helperLight = new THREE.DirectionalLight(0x1e3a8a, 0.35);
+            helperLight.position.set(-15, 10, -15);
+            scene.add(helperLight);
+
+            addWorkspaceGrids();
+            createHoverHelper();
+
+            window.addEventListener('resize', onWindowResize);
+
+            renderer.domElement.addEventListener('pointermove', onPointerMove);
+            renderer.domElement.addEventListener('pointerdown', onPointerDown);
+            renderer.domElement.addEventListener('pointerup', onPointerUp);
+            renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+
+            animate();
+        }
+
+        function addWorkspaceGrids() {
+            const floorGrid = new THREE.GridHelper(24, 24, 0xef4444, 0x1c1917);
+            floorGrid.position.set(GRID_W/2 - 0.5, -0.5, GRID_D/2 - 0.5);
+            scene.add(floorGrid);
+
+            const planeGeom = new THREE.PlaneGeometry(GRID_W, GRID_D);
+            planeGeom.rotateX(-Math.PI / 2);
+            const planeMat = new THREE.MeshBasicMaterial({ 
+                color: 0xef4444, 
+                visible: true, 
+                transparent: true, 
+                opacity: 0.15,
+                side: THREE.DoubleSide
+            });
+            editPlaneMesh = new THREE.Mesh(planeGeom, planeMat);
+            editPlaneMesh.position.set(GRID_W/2 - 0.5, currentLayer - 0.45, GRID_D/2 - 0.5);
+            scene.add(editPlaneMesh);
+
+            const gridHelper = new THREE.GridHelper(GRID_W, GRID_W, 0xef4444, 0xd97706);
+            gridHelper.position.set(GRID_W/2 - 0.5, currentLayer - 0.45, GRID_D/2 - 0.5);
+            gridHelper.name = "activeLayerGrid";
+            scene.add(gridHelper);
+
+            const boundsGeom = new THREE.BoxGeometry(GRID_W, GRID_H, GRID_D);
+            const boundsEdges = new THREE.EdgesGeometry(boundsGeom);
+            const boundsLine = new THREE.LineSegments(boundsEdges, new THREE.LineBasicMaterial({ color: 0x44403c, linewidth: 2 }));
+            boundsLine.position.set(GRID_W/2 - 0.5, GRID_H/2 - 0.5, GRID_D/2 - 0.5);
+            scene.add(boundsLine);
+        }
+
+        function updateLayerHeight(layerY) {
+            currentLayer = parseInt(layerY);
+            document.getElementById('active-layer-lbl').innerText = currentLayer;
+            
+            editPlaneMesh.position.y = currentLayer - 0.45;
+            
+            const oldGrid = scene.getObjectByName("activeLayerGrid");
+            if (oldGrid) scene.remove(oldGrid);
+
+            const gridHelper = new THREE.GridHelper(GRID_W, GRID_W, 0xef4444, 0xd97706);
+            gridHelper.position.set(GRID_W/2 - 0.5, currentLayer - 0.45, GRID_D/2 - 0.5);
+            gridHelper.name = "activeLayerGrid";
+            scene.add(gridHelper);
+
+            applyLayerVisibility();
+            updateRaycastHover();
+        }
+
+        function applyLayerVisibility() {
+            for (let key in meshes) {
+                let coords = key.split(',').map(Number);
+                let y = coords[1];
+                let group = meshes[key];
+
+                let isVisible = (y === currentLayer);
+                
+                group.traverse(child => {
+                    if (child.isMesh) {
+                        child.material.transparent = true;
+                        child.material.opacity = isVisible ? 1.0 : 0.08;
+                    }
+                });
+            }
+        }
+
+        function createHoverHelper() {
+            hoverMeshContainer = new THREE.Group();
+
+            const hoverGeom = new THREE.BoxGeometry(1.02, 1.02, 1.02);
+            const hoverEdges = new THREE.EdgesGeometry(hoverGeom);
+            const hoverMat = new THREE.LineBasicMaterial({ color: 0xfacc15, linewidth: 3 });
+            const hoverWireframe = new THREE.LineSegments(hoverEdges, hoverMat);
+            hoverWireframe.name = "hoverWireframe"; 
+            hoverMeshContainer.add(hoverWireframe);
+
+            const blockPreviewGroup = new THREE.Group();
+            blockPreviewGroup.name = "blockPreview";
+            hoverMeshContainer.add(blockPreviewGroup);
+
+            const arrowGeom = new THREE.ConeGeometry(0.18, 0.4, 4);
+            const arrowMat = new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.85 });
+            const arrowMesh = new THREE.Mesh(arrowGeom, arrowMat);
+            arrowMesh.name = "facingArrow";
+            arrowMesh.rotateX(Math.PI / 2);
+            arrowMesh.position.set(0, 0.55, 0);
+            hoverMeshContainer.add(arrowMesh);
+
+            hoverMeshContainer.visible = false;
+            scene.add(hoverMeshContainer);
+        }
+
+        function updateHoverPreviewMesh() {
+            const blockPreview = hoverMeshContainer.getObjectByName("blockPreview");
+            const arrow = hoverMeshContainer.getObjectByName("facingArrow");
+            const hoverWireframe = hoverMeshContainer.getObjectByName("hoverWireframe");
+
+            if (!blockPreview) return;
+
+            while(blockPreview.children.length > 0) { 
+                blockPreview.remove(blockPreview.children[0]); 
+            }
+
+            if (hoverWireframe && hoverWireframe.material) {
+                if (activeToolMode === 'place') {
+                    hoverWireframe.material.color.setHex(0xfacc15); // Yellow / Gold
+                    blockPreview.visible = true;
+                    if (arrow) {
+                        arrow.visible = true;
+                        arrow.material.color.setHex(0xfacc15);
+                    }
+                } else if (activeToolMode === 'interact') {
+                    hoverWireframe.material.color.setHex(0x3b82f6); // Blue
+                    blockPreview.visible = false;
+                    if (arrow) arrow.visible = false;
+                    return; 
+                } else if (activeToolMode === 'destroy') {
+                    hoverWireframe.material.color.setHex(0xef4444); // Red
+                    blockPreview.visible = false;
+                    if (arrow) arrow.visible = false;
+                    return; 
+                }
+            }
+
+            let sampleMesh = createBlockGeometry(activeBlockType, placementDir, true, 15, {
+                delay: parseInt(repeaterDelay),
+                state: 'on',
+                extended: false
+            }, null);
+
+            sampleMesh.traverse(child => {
+                if (child.isMesh) {
+                    child.material = child.material.clone();
+                    child.material.transparent = true;
+                    child.material.opacity = 0.55;
+                }
+            });
+
+            blockPreview.add(sampleMesh);
+
+            if (arrow) {
+                arrow.rotation.set(0, 0, 0);
+                arrow.position.set(0, 0.55, 0);
+                if (placementDir === 'north') {
+                    arrow.rotateX(-Math.PI / 2);
+                    arrow.position.set(0, 0, -0.6);
+                } else if (placementDir === 'south') {
+                    arrow.rotateX(Math.PI / 2);
+                    arrow.position.set(0, 0, 0.6);
+                } else if (placementDir === 'east') {
+                    arrow.rotateZ(-Math.PI / 2);
+                    arrow.position.set(0.6, 0, 0);
+                } else if (placementDir === 'west') {
+                    arrow.rotateZ(Math.PI / 2);
+                    arrow.position.set(-0.6, 0, 0);
+                } else if (placementDir === 'up') {
+                    arrow.position.set(0, 0.6, 0);
+                } else if (placementDir === 'down') {
+                    arrow.rotateX(Math.PI);
+                    arrow.position.set(0, -0.6, 0);
+                }
+            }
+        }
+
+        function checkRedstoneNeighbors(x, y, z) {
+            let connections = { north: false, south: false, east: false, west: false };
+            let dirs = [
+                { dir: 'north', offset: { x: 0, z: -1 } },
+                { dir: 'south', offset: { x: 0, z: 1 } },
+                { dir: 'east', offset: { x: 1, z: 0 } },
+                { dir: 'west', offset: { x: -1, z: 0 } }
+            ];
+
+            for (let d of dirs) {
+                let nx = x + d.offset.x;
+                let nz = z + d.offset.z;
+                
+                let yOffsets = [0, -1, 1];
+                for (let dy of yOffsets) {
+                    let neighbor = grid[`${nx},${y + dy},${nz}`];
+                    if (neighbor && (neighbor.type === 'dust' || neighbor.type === 'repeater' || neighbor.type === 'torch' || neighbor.type === 'lever' || neighbor.type === 'redstone_block')) {
+                        connections[d.dir] = true;
+                        break;
+                    }
+                }
+            }
+            return connections;
+        }
+
+        function getBlockKeyFromObject(object) {
+            for (let key in meshes) {
+                let group = meshes[key];
+                let isChild = false;
+                group.traverse(child => {
+                    if (child === object) isChild = true;
+                });
+                if (isChild) return key;
+            }
+            return null;
+        }
+
+        function createBlockGeometry(type, dir, isPowered, powerLevel = 0, stateInfo = {}, gridCoords = null) {
+            const group = new THREE.Group();
+
+            const stoneMat = new THREE.MeshLambertMaterial({ color: COLORS.stone });
+            const redstoneBlockMat = new THREE.MeshLambertMaterial({ 
+                color: COLORS.redstoneOn, 
+                emissive: COLORS.redstoneOn, 
+                emissiveIntensity: 0.45 
+            });
+            const dustMat = new THREE.MeshLambertMaterial({ 
+                color: isPowered ? COLORS.dustOn : COLORS.dustOff,
+                emissive: isPowered ? COLORS.dustOn : 0x000000,
+                emissiveIntensity: isPowered ? 0.7 : 0.0
+            });
+            const torchMat = new THREE.MeshLambertMaterial({ 
+                color: isPowered ? COLORS.torchOn : COLORS.torchOff,
+                emissive: isPowered ? COLORS.torchOn : 0x000000,
+                emissiveIntensity: isPowered ? 0.8 : 0.0
+            });
+            const stickMat = new THREE.MeshLambertMaterial({ color: 0x815a3c }); 
+            const pistonBaseMat = new THREE.MeshLambertMaterial({ color: COLORS.pistonBase });
+            const pistonFaceMat = new THREE.MeshLambertMaterial({ 
+                color: type === 'sticky_piston' ? COLORS.stickyGreen : COLORS.pistonWood 
+            });
+
+            if (type === 'solid') {
+                const boxGeom = new THREE.BoxGeometry(0.95, 0.95, 0.95);
+                const mesh = new THREE.Mesh(boxGeom, stoneMat);
+                group.add(mesh);
+
+                const edges = new THREE.EdgesGeometry(boxGeom);
+                const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: COLORS.stoneBorders }));
+                group.add(line);
+
+            } else if (type === 'redstone_block') {
+                const boxGeom = new THREE.BoxGeometry(0.95, 0.95, 0.95);
+                const mesh = new THREE.Mesh(boxGeom, redstoneBlockMat);
+                group.add(mesh);
+
+            } else if (type === 'dust') {
+                let connections = { north: true, south: true, east: true, west: true };
+                if (gridCoords) {
+                    connections = checkRedstoneNeighbors(gridCoords.x, gridCoords.y, gridCoords.z);
+                    if (!connections.north && !connections.south && !connections.east && !connections.west) {
+                        connections = { north: true, south: true, east: true, west: true };
+                    }
+                }
+
+                const centerNode = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.04, 0.2), dustMat);
+                centerNode.position.y = -0.46;
+                group.add(centerNode);
+
+                if (connections.north) {
+                    const northWire = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.04, 0.4), dustMat);
+                    northWire.position.set(0, -0.46, -0.25);
+                    group.add(northWire);
+                }
+                if (connections.south) {
+                    const southWire = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.04, 0.4), dustMat);
+                    southWire.position.set(0, -0.46, 0.25);
+                    group.add(southWire);
+                }
+                if (connections.east) {
+                    const eastWire = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.04, 0.16), dustMat);
+                    eastWire.position.set(0.25, -0.46, 0);
+                    group.add(eastWire);
+                }
+                if (connections.west) {
+                    const westWire = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.04, 0.16), dustMat);
+                    westWire.position.set(-0.25, -0.46, 0);
+                    group.add(westWire);
+                }
+
+                if (isPowered) {
+                    const spark = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.1, 0.12), dustMat);
+                    spark.position.y = -0.4;
+                    group.add(spark);
+                }
+
+            } else if (type === 'torch') {
+                const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.45), stickMat);
+                rod.position.y = -0.2;
+                group.add(rod);
+
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 0.16), torchMat);
+                head.position.y = 0.08;
+                group.add(head);
+
+                orientComponent(group, dir);
+
+            } else if (type === 'repeater') {
+                const plate = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.9), stoneMat);
+                plate.position.y = -0.42;
+                group.add(plate);
+
+                const fixedTorchRod = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.2), stickMat);
+                fixedTorchRod.position.set(0, -0.27, -0.28);
+                const fixedTorchHead = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.15, 0.12), torchMat);
+                fixedTorchHead.position.set(0, -0.15, -0.28);
+                group.add(fixedTorchRod, fixedTorchHead);
+
+                const delay = stateInfo.delay || 1;
+                const offsetAmount = -0.05 + (delay * 0.1); 
+                const movingTorchRod = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.2), stickMat);
+                movingTorchRod.position.set(0, -0.27, offsetAmount);
+                const movingTorchHead = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.15, 0.12), torchMat);
+                movingTorchHead.position.set(0, -0.15, offsetAmount);
+                group.add(movingTorchRod, movingTorchHead);
+
+                const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.28, 3), dustMat);
+                arrow.rotateX(-Math.PI / 2);
+                arrow.position.set(0, -0.36, -0.05);
+                group.add(arrow);
+
+                orientComponent(group, dir);
+
+            } else if (type === 'lever') {
+                const plate = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.08, 0.55), stoneMat);
+                plate.position.y = -0.45;
+                group.add(plate);
+
+                const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.48), stickMat);
+                const isOn = stateInfo.state === 'on';
+                handle.rotation.x = isOn ? -Math.PI / 4 : Math.PI / 4;
+                handle.position.set(0, -0.25, isOn ? -0.12 : 0.12);
+                group.add(handle);
+
+                orientComponent(group, dir);
+
+            } else if (type === 'piston' || type === 'sticky_piston') {
+                const base = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.95, 0.95), pistonBaseMat);
+                group.add(base);
+
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.22, 0.95), pistonFaceMat);
+
+                const isExtended = stateInfo.extended === true;
+                if (isExtended) {
+                    head.position.set(0, 0, -0.72);
+                    
+                    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.24, 0.78), stickMat);
+                    arm.position.set(0, 0, -0.32);
+                    group.add(arm);
+                } else {
+                    head.position.set(0, 0, -0.38);
+                }
+                group.add(head);
+
+                orientComponent(group, dir);
+            }
+
+            return group;
+        }
+
+        function orientComponent(group, dir) {
+            if (dir === 'south') {
+                group.rotation.y = Math.PI;
+            } else if (dir === 'west') {
+                group.rotation.y = Math.PI / 2;
+            } else if (dir === 'east') {
+                group.rotation.y = -Math.PI / 2;
+            } else if (dir === 'up') {
+                group.rotation.x = Math.PI / 2;
+            } else if (dir === 'down') {
+                group.rotation.x = -Math.PI / 2;
+            }
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function onPointerMove(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            updateRaycastHover();
+        }
+
+        function updateRaycastHover() {
+            raycaster.setFromCamera(mouse, camera);
+            let intersects = raycaster.intersectObjects(scene.children, true);
+            
+            let validIntersect = null;
+            for (let inter of intersects) {
+                if (inter.object === hoverMeshContainer || inter.object.parent === hoverMeshContainer || inter.object.parent?.parent === hoverMeshContainer) continue;
+                
+                if (inter.object === editPlaneMesh) {
+                    validIntersect = inter;
+                    break;
+                } else {
+                    let blockKey = getBlockKeyFromObject(inter.object);
+                    if (blockKey) {
+                        let coords = blockKey.split(',').map(Number);
+                        if (coords[1] === currentLayer) {
+                            validIntersect = inter;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (validIntersect) {
+                let point = validIntersect.point;
+                let hoverCoord = null;
+
+                let hitBlockKey = getBlockKeyFromObject(validIntersect.object);
+
+                if (hitBlockKey) {
+                    // Snap directly to the block itself instead of adjacent spaces
+                    let coords = hitBlockKey.split(',').map(Number);
+                    hoverCoord = {
+                        x: coords[0],
+                        y: coords[1],
+                        z: coords[2]
+                    };
+                } else if (validIntersect.object === editPlaneMesh) {
+                    hoverCoord = {
+                        x: Math.floor(point.x + 0.5),
+                        y: currentLayer,
+                        z: Math.floor(point.z + 0.5)
+                    };
+                }
+
+                if (hoverCoord && 
+                    hoverCoord.x >= 0 && hoverCoord.x < GRID_W &&
+                    hoverCoord.y >= 0 && hoverCoord.y < GRID_H &&
+                    hoverCoord.z >= 0 && hoverCoord.z < GRID_D) {
+                    
+                    if (hoverCoord.y !== currentLayer) {
+                        hoverMeshContainer.visible = false;
+                        hoverGridCoord = null;
+                        return;
+                    }
+
+                    hoverMeshContainer.position.set(hoverCoord.x, hoverCoord.y, hoverCoord.z);
+                    hoverMeshContainer.visible = true;
+                    hoverGridCoord = hoverCoord;
+
+                    updateHoverPreviewMesh();
+                } else {
+                    hoverMeshContainer.visible = false;
+                    hoverGridCoord = null;
+                }
+            } else {
+                hoverMeshContainer.visible = false;
+                hoverGridCoord = null;
+            }
+        }
+
+        function onPointerDown(event) {
+            pointerDownTime = Date.now();
+            pointerDownPos.set(event.clientX, event.clientY);
+        }
+
+        function onPointerUp(event) {
+            let clickDuration = Date.now() - pointerDownTime;
+            let clickDist = Math.hypot(event.clientX - pointerDownPos.x, event.clientY - pointerDownPos.y);
+
+            if (clickDuration < 300 && clickDist < 15) {
+                handleWorkspaceInteraction(event);
+            }
+        }
+
+        function handleWorkspaceInteraction(event) {
+            raycaster.setFromCamera(mouse, camera);
+            let intersects = raycaster.intersectObjects(scene.children, true);
+            
+            let validIntersect = null;
+            for (let inter of intersects) {
+                if (inter.object === hoverMeshContainer || inter.object.parent === hoverMeshContainer || inter.object.parent?.parent === hoverMeshContainer) continue;
+                
+                if (inter.object === editPlaneMesh) {
+                    validIntersect = inter;
+                    break;
+                } else {
+                    let blockKey = getBlockKeyFromObject(inter.object);
+                    if (blockKey) {
+                        let coords = blockKey.split(',').map(Number);
+                        if (coords[1] === currentLayer) {
+                            validIntersect = inter;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!validIntersect) return;
+
+            let point = validIntersect.point;
+
+            let clickedCoord = null;
+            let placementCoord = null;
+
+            let clickedBlockKey = getBlockKeyFromObject(validIntersect.object);
+
+            if (clickedBlockKey) {
+                // Focus strictly on the exact block coordinate (solves floating normals and allows direct replacement)
+                let coords = clickedBlockKey.split(',').map(Number);
+                clickedCoord = { x: coords[0], y: coords[1], z: coords[2] };
+                placementCoord = clickedCoord; 
+            } else if (validIntersect.object === editPlaneMesh) {
+                placementCoord = {
+                    x: Math.floor(point.x + 0.5),
+                    y: currentLayer,
+                    z: Math.floor(point.z + 0.5)
+                };
+            }
+
+            if (placementCoord && placementCoord.y !== currentLayer) {
+                placementCoord = null;
+            }
+            if (clickedCoord && clickedCoord.y !== currentLayer) {
+                clickedCoord = null;
+            }
+
+            if (event.button === 2 || activeToolMode === 'destroy') {
+                if (clickedCoord) {
+                    removeBlock(clickedCoord.x, clickedCoord.y, clickedCoord.z);
+                    propagateRedstoneSignals();
+                }
+            } else if (activeToolMode === 'interact' || event.shiftKey) {
+                if (clickedCoord) {
+                    let key = `${clickedCoord.x},${clickedCoord.y},${clickedCoord.z}`;
+                    let b = grid[key];
+                    if (b && b.type === 'lever') {
+                        b.state = (b.state === 'on') ? 'off' : 'on';
+                        redrawBlock(clickedCoord.x, clickedCoord.y, clickedCoord.z);
+                        propagateRedstoneSignals();
+                    } else if (b && b.type === 'repeater') {
+                        // Cycles Repeater Delay (1, 2, 3, 4)
+                        b.delay = (b.delay % 4) + 1;
+                        redrawBlock(clickedCoord.x, clickedCoord.y, clickedCoord.z);
+                        propagateRedstoneSignals();
+                    }
+                }
+            } else {
+                if (placementCoord) {
+                    if (placementCoord.x >= 0 && placementCoord.x < GRID_W &&
+                        placementCoord.y >= 0 && placementCoord.y < GRID_H &&
+                        placementCoord.z >= 0 && placementCoord.z < GRID_D) {
+                        
+                        let key = `${placementCoord.x},${placementCoord.y},${placementCoord.z}`;
+                        
+                        // Destroy existing block if trying to place over it
+                        if (grid[key]) {
+                            removeBlock(placementCoord.x, placementCoord.y, placementCoord.z);
+                        }
+                        
+                        placeBlock(placementCoord.x, placementCoord.y, placementCoord.z, activeBlockType);
+                        propagateRedstoneSignals();
+                    }
+                }
+            }
+
+            updateRaycastHover();
+        }
+
+        function placeBlock(x, y, z, type) {
+            let key = `${x},${y},${z}`;
+            grid[key] = {
+                type: type,
+                direction: placementDir,
+                delay: parseInt(repeaterDelay),
+                state: (type === 'torch' || type === 'redstone_block') ? 'on' : 'off',
+                extended: false,
+                ticks_left: null,
+                pending_state: null
+            };
+
+            redrawBlock(x, y, z);
+            recalculateDustNeighbors(x, y, z);
+        }
+
+        function removeBlock(x, y, z) {
+            let key = `${x},${y},${z}`;
+            if (grid[key]) {
+                delete grid[key];
+                if (meshes[key]) {
+                    scene.remove(meshes[key]);
+                    delete meshes[key];
+                }
+                recalculateDustNeighbors(x, y, z);
+            }
+        }
+
+        function recalculateDustNeighbors(x, y, z) {
+            let offsets = [
+                { x: 1, y: 0, z: 0 }, { x: -1, y: 0, z: 0 },
+                { x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: -1 },
+                { x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 }
+            ];
+            for (let off of offsets) {
+                let nx = x + off.x;
+                let ny = y + off.y;
+                let nz = z + off.z;
+                let key = `${nx},${ny},${nz}`;
+                if (grid[key] && grid[key].type === 'dust') {
+                    redrawBlock(nx, ny, nz);
+                }
+            }
+        }
+
+        function redrawBlock(x, y, z, simulatedPower = 0) {
+            let key = `${x},${y},${z}`;
+            let data = grid[key];
+
+            if (meshes[key]) {
+                scene.remove(meshes[key]);
+                delete meshes[key];
+            }
+
+            if (!data) return;
+
+            let isPowered = (simulatedPower > 0 || data.state === 'on');
+            let blockMeshGroup = createBlockGeometry(data.type, data.direction, isPowered, simulatedPower, {
+                delay: data.delay,
+                state: data.state,
+                extended: data.extended
+            }, { x, y, z });
+
+            blockMeshGroup.position.set(x, y, z);
+            scene.add(blockMeshGroup);
+            meshes[key] = blockMeshGroup;
+
+            applyLayerVisibility();
+        }
+
+        function getDirectionOffset(dir) {
+            switch(dir) {
+                case 'north': return { x: 0, y: 0, z: -1 };
+                case 'south': return { x: 0, y: 0, z: 1 };
+                case 'west':  return { x: -1, y: 0, z: 0 };
+                case 'east':  return { x: 1, y: 0, z: 0 };
+                case 'up':    return { x: 0, y: 1, z: 0 };
+                case 'down':  return { x: 0, y: -1, z: 0 };
+                default:      return { x: 0, y: 0, z: 0 };
+            }
+        }
+
+        function getOppositeDir(dir) {
+            switch(dir) {
+                case 'north': return 'south';
+                case 'south': return 'north';
+                case 'west':  return 'east';
+                case 'east':  return 'west';
+                case 'up':    return 'down';
+                case 'down':  return 'up';
+                default:      return 'north';
+            }
+        }
+
+        function getBlockData(x, y, z) {
+            return grid[`${x},${y},${z}`] || null;
+        }
+
+        function runSingleSimStep() {
+            currentTick++;
+            document.getElementById('sim-tick-count').innerText = currentTick;
+            propagateRedstoneSignals();
+        }
+
+        function propagateRedstoneSignals() {
+            let powerGrid = {};
+            let powerSourcesQueue = [];
+
+            for (let key in grid) {
+                let coords = key.split(',').map(Number);
+                let x = coords[0], y = coords[1], z = coords[2];
+                let b = grid[key];
+
+                if (b.type === 'redstone_block') {
+                    powerSourcesQueue.push({ x, y, z, p: 15 });
+                } else if (b.type === 'lever' && b.state === 'on') {
+                    powerSourcesQueue.push({ x, y, z, p: 15 });
+                } else if (b.type === 'torch' && b.state === 'on') {
+                    powerSourcesQueue.push({ x, y, z, p: 15 });
+                    powerSourcesQueue.push({ x, y: y+1, z, p: 15 }); 
+                } else if (b.type === 'repeater' && b.state === 'on') {
+                    let offset = getDirectionOffset(b.direction);
+                    powerSourcesQueue.push({ x: x + offset.x, y: y + offset.y, z: z + offset.z, p: 15 });
+                }
+            }
+
+            while (powerSourcesQueue.length > 0) {
+                let current = powerSourcesQueue.shift();
+                let key = `${current.x},${current.y},${current.z}`;
+
+                if ((powerGrid[key] || 0) >= current.p) continue;
+                powerGrid[key] = current.p;
+
+                if (current.p <= 1) continue;
+
+                let b = getBlockData(current.x, current.y, current.z);
+
+                let neighbors = [
+                    { x: current.x + 1, y: current.y, z: current.z },
+                    { x: current.x - 1, y: current.y, z: current.z },
+                    { x: current.x, y: current.y + 1, z: current.z },
+                    { x: current.x, y: current.y - 1, z: current.z },
+                    { x: current.x, y: current.y, z: current.z + 1 },
+                    { x: current.x, y: current.y, z: current.z - 1 }
+                ];
+
+                for (let n of neighbors) {
+                    let nb = getBlockData(n.x, n.y, n.z);
+                    let powerDecrement = current.p - 1;
+
+                    if (!b || b.type === 'dust' || b.type === 'solid' || b.type === 'redstone_block') {
+                        if (nb && (nb.type === 'dust' || nb.type === 'solid' || nb.type === 'piston' || nb.type === 'sticky_piston')) {
+                            powerSourcesQueue.push({ x: n.x, y: n.y, z: n.z, p: powerDecrement });
+                        }
+                    }
+                }
+            }
+
+            for (let key in grid) {
+                let coords = key.split(',').map(Number);
+                let x = coords[0], y = coords[1], z = coords[2];
+                let b = grid[key];
+
+                if (b.type === 'repeater') {
+                    let oppositeDir = getOppositeDir(b.direction);
+                    let offsetIn = getDirectionOffset(oppositeDir);
+                    let inputPower = powerGrid[`${x + offsetIn.x},${y + offsetIn.y},${z + offsetIn.z}`] || 0;
+
+                    let shouldBeOn = (inputPower > 0);
+
+                    if (shouldBeOn && b.state === 'off') {
+                        if (b.ticks_left === null) {
+                            b.ticks_left = b.delay;
+                            b.pending_state = 'on';
+                        }
+                    } else if (!shouldBeOn && b.state === 'on') {
+                        if (b.ticks_left === null) {
+                            b.ticks_left = b.delay;
+                            b.pending_state = 'off';
+                        }
+                    }
+
+                    if (b.ticks_left !== null) {
+                        b.ticks_left--;
+                        if (b.ticks_left <= 0) {
+                            b.state = b.pending_state;
+                            b.ticks_left = null;
+                            b.pending_state = null;
+                        }
+                    }
+
+                } else if (b.type === 'torch') {
+                    let parentPower = powerGrid[`${x},${y-1},${z}`] || 0;
+                    let shouldBeOn = (parentPower === 0);
+
+                    if (shouldBeOn && b.state === 'off') {
+                        if (b.ticks_left === null) {
+                            b.ticks_left = 1;
+                            b.pending_state = 'on';
+                        }
+                    } else if (!shouldBeOn && b.state === 'on') {
+                        if (b.ticks_left === null) {
+                            b.ticks_left = 1;
+                            b.pending_state = 'off';
+                        }
+                    }
+
+                    if (b.ticks_left !== null) {
+                        b.ticks_left--;
+                        if (b.ticks_left <= 0) {
+                            b.state = b.pending_state;
+                            b.ticks_left = null;
+                            b.pending_state = null;
+                        }
+                    }
+
+                } else if (b.type === 'piston' || b.type === 'sticky_piston') {
+                    let isPowered = (powerGrid[`${x},${y},${z}`] > 0 || 
+                                     powerGrid[`${x+1},${y},${z}`] > 0 || 
+                                     powerGrid[`${x-1},${y},${z}`] > 0 || 
+                                     powerGrid[`${x},${y+1},${z}`] > 0 || 
+                                     powerGrid[`${x},${y-1},${z}`] > 0 || 
+                                     powerGrid[`${x},${y},${z+1}`] > 0 || 
+                                     powerGrid[`${x},${y},${z-1}`] > 0);
+
+                    if (isPowered && !b.extended) {
+                        let success = tryPistonPush(x, y, z, b.direction);
+                        if (success) b.extended = true;
+                    } else if (!isPowered && b.extended) {
+                        tryPistonRetract(x, y, z, b.direction, (b.type === 'sticky_piston'));
+                        b.extended = false;
+                    }
+                }
+            }
+
+            for (let key in grid) {
+                let coords = key.split(',').map(Number);
+                let x = coords[0], y = coords[1], z = coords[2];
+                let powerLevel = powerGrid[key] || 0;
+                redrawBlock(x, y, z, powerLevel);
+            }
+        }
+
+        function tryPistonPush(pistonX, pistonY, pistonZ, dir) {
+            let offset = getDirectionOffset(dir);
+            let blocksToPush = [];
+            
+            let curX = pistonX + offset.x;
+            let curY = pistonY + offset.y;
+            let curZ = pistonZ + offset.z;
+
+            let canPush = false;
+            for (let i = 0; i < 12; i++) {
+                if (curX < 0 || curX >= GRID_W || curY < 0 || curY >= GRID_H || curZ < 0 || curZ >= GRID_D) {
+                    canPush = false;
+                    break;
+                }
+
+                let b = getBlockData(curX, curY, curZ);
+                if (!b) {
+                    canPush = true; 
+                    break;
+                } else if (b.type === 'redstone_block' || b.type === 'solid') {
+                    blocksToPush.push({ x: curX, y: curY, z: curZ, data: Object.assign({}, b) });
+                } else {
+                    canPush = false;
+                    break;
+                }
+
+                curX += offset.x;
+                curY += offset.y;
+                curZ += offset.z;
+            }
+
+            if (canPush) {
+                for (let i = blocksToPush.length - 1; i >= 0; i--) {
+                    let src = blocksToPush[i];
+                    let destX = src.x + offset.x;
+                    let destY = src.y + offset.y;
+                    let destZ = src.z + offset.z;
+
+                    grid[`${destX},${destY},${destZ}`] = src.data;
+                    removeBlock(src.x, src.y, src.z);
+                    redrawBlock(destX, destY, destZ);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        function tryPistonRetract(pistonX, pistonY, pistonZ, dir, isSticky) {
+            if (!isSticky) return;
+
+            let offset = getDirectionOffset(dir);
+            
+            let headX = pistonX + offset.x * 2;
+            let headY = pistonY + offset.y * 2;
+            let headZ = pistonZ + offset.z * 2;
+
+            let targetX = pistonX + offset.x;
+            let targetY = pistonY + offset.y;
+            let targetZ = pistonZ + offset.z;
+
+            let blockInFront = getBlockData(headX, headY, headZ);
+            if (blockInFront && (blockInFront.type === 'solid' || blockInFront.type === 'redstone_block')) {
+                grid[`${targetX},${targetY},${targetZ}`] = Object.assign({}, blockInFront);
+                removeBlock(headX, headY, headZ);
+                redrawBlock(targetX, targetY, targetZ);
+            }
+        }
+
+        function startSimulation() {
+            if (isSimulating) return;
+            
+            preSimBackup = JSON.parse(JSON.stringify(grid));
+            
+            isSimulating = true;
+            document.getElementById('btn-play').classList.add('hidden');
+            document.getElementById('btn-pause').classList.remove('hidden');
+            
+            const simBanner = document.getElementById('sim-banner');
+            simBanner.classList.remove('hidden');
+            simBanner.style.display = 'flex';
+
+            const speedValue = parseInt(document.getElementById('sim-speed').value);
+            const intervalMs = Math.round(1000 / speedValue);
+
+            simInterval = setInterval(() => {
+                runSingleSimStep();
+            }, intervalMs);
+        }
+
+        function pauseSimulation() {
+            if (!isSimulating) return;
+            clearInterval(simInterval);
+            simInterval = null;
+            isSimulating = false;
+            document.getElementById('btn-play').classList.remove('hidden');
+            document.getElementById('btn-pause').classList.add('hidden');
+        }
+
+        function resetSimulation() {
+            pauseSimulation();
+            
+            if (preSimBackup) {
+                grid = JSON.parse(JSON.stringify(preSimBackup));
+                preSimBackup = null;
+            }
+
+            currentTick = 0;
+            document.getElementById('sim-tick-count').innerText = "0";
+            
+            const simBanner = document.getElementById('sim-banner');
+            simBanner.classList.add('hidden');
+            simBanner.style.display = 'none';
+
+            for (let key in meshes) {
+                scene.remove(meshes[key]);
+            }
+            meshes = {};
+
+            for (let key in grid) {
+                let coords = key.split(',').map(Number);
+                redrawBlock(coords[0], coords[1], coords[2]);
+            }
+
+            propagateRedstoneSignals();
+        }
+
+        const PRESETS = {
+            repeater_clock: {
+                "2,0,2": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "3,0,2": { type: "repeater", direction: "east", delay: 3, state: "off", extended: false },
+                "4,0,2": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "4,0,3": { type: "repeater", direction: "south", delay: 3, state: "off", extended: false },
+                "4,0,4": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "3,0,4": { type: "repeater", direction: "west", delay: 3, state: "off", extended: false },
+                "2,0,4": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "2,0,3": { type: "repeater", direction: "north", delay: 3, state: "off", extended: false },
+                "1,0,2": { type: "lever", direction: "east", delay: 1, state: "off", extended: false }
+            },
+            xor_gate: {
+                "2,0,4": { type: "lever", direction: "north", delay: 1, state: "on", extended: false },
+                "4,0,4": { type: "lever", direction: "north", delay: 1, state: "off", extended: false },
+                "2,0,3": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "4,0,3": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "2,0,2": { type: "solid", direction: "north", delay: 1, state: "off", extended: false },
+                "4,0,2": { type: "solid", direction: "north", delay: 1, state: "off", extended: false },
+                "3,0,2": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "2,1,2": { type: "torch", direction: "north", delay: 1, state: "on", extended: false },
+                "4,1,2": { type: "torch", direction: "north", delay: 1, state: "on", extended: false }
+            },
+            piston_extender: {
+                "2,0,2": { type: "sticky_piston", direction: "east", delay: 1, state: "off", extended: false },
+                "3,0,2": { type: "sticky_piston", direction: "east", delay: 1, state: "off", extended: false },
+                "4,0,2": { type: "solid", direction: "north", delay: 1, state: "off", extended: false }, 
+                "1,0,4": { type: "lever", direction: "east", delay: 1, state: "off", extended: false },
+                "2,0,4": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "2,0,3": { type: "repeater", direction: "north", delay: 1, state: "off", extended: false },
+                "3,0,4": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "3,0,3": { type: "repeater", direction: "north", delay: 3, state: "off", extended: false }
+            },
+            rs_nor_latch: {
+                "2,0,2": { type: "solid", direction: "north", delay: 1, state: "off", extended: false },
+                "4,0,2": { type: "solid", direction: "north", delay: 1, state: "off", extended: false },
+                "2,1,2": { type: "torch", direction: "north", delay: 1, state: "on", extended: false },
+                "4,1,2": { type: "torch", direction: "north", delay: 1, state: "on", extended: false },
+                "2,0,3": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "3,0,3": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "4,0,3": { type: "dust", direction: "north", delay: 1, state: "off", extended: false },
+                "1,0,2": { type: "lever", direction: "east", delay: 1, state: "off", extended: false },
+                "5,0,2": { type: "lever", direction: "west", delay: 1, state: "off", extended: false }
+            }
+        };
+
+        function loadPreset(presetName) {
+            if (!PRESETS[presetName]) return;
+            
+            resetSimulation();
+
+            for (let key in meshes) {
+                scene.remove(meshes[key]);
+            }
+            grid = {};
+            meshes = {};
+
+            let pData = PRESETS[presetName];
+            for (let key in pData) {
+                grid[key] = JSON.parse(JSON.stringify(pData[key]));
+                let coords = key.split(',').map(Number);
+                redrawBlock(coords[0], coords[1], coords[2]);
+            }
+
+            camera.position.set(10, 8, 12);
+            controls.target.set(3, 1, 3);
+            controls.update();
+
+            propagateRedstoneSignals();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initScene();
+
+            const blockButtons = document.querySelectorAll('.block-btn');
+            blockButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    blockButtons.forEach(b => b.classList.remove('active', 'border-red-500', 'bg-stone-800'));
+                    blockButtons.forEach(b => b.classList.add('bg-stone-950', 'border-stone-800'));
+                    
+                    const blockType = btn.getAttribute('data-block-type');
+                    activeBlockType = blockType;
+
+                    btn.classList.remove('bg-stone-950', 'border-stone-800');
+                    btn.classList.add('active', 'border-red-500', 'bg-stone-800');
+
+                    const delayConfig = document.getElementById('delay-config-row');
+                    if (blockType === 'repeater') {
+                        delayConfig.classList.remove('hidden');
+                    } else {
+                        delayConfig.classList.add('hidden');
+                    }
+                    updateHoverPreviewMesh();
+                });
+            });
+
+            const toolPlaceBtn = document.getElementById('tool-place');
+            const toolInteractBtn = document.getElementById('tool-interact');
+            const toolDestroyBtn = document.getElementById('tool-destroy');
+
+            function setToolMode(mode) {
+                activeToolMode = mode;
+                [toolPlaceBtn, toolInteractBtn, toolDestroyBtn].forEach(btn => {
+                    btn.classList.remove('bg-red-600', 'text-white');
+                    btn.classList.add('text-stone-400', 'hover:text-stone-200');
+                });
+
+                if (mode === 'place') {
+                    toolPlaceBtn.classList.add('bg-red-600', 'text-white');
+                    toolPlaceBtn.classList.remove('text-stone-400', 'hover:text-stone-200');
+                } else if (mode === 'interact') {
+                    toolInteractBtn.classList.add('bg-red-600', 'text-white');
+                    toolInteractBtn.classList.remove('text-stone-400', 'hover:text-stone-200');
+                } else if (mode === 'destroy') {
+                    toolDestroyBtn.classList.add('bg-red-600', 'text-white');
+                    toolDestroyBtn.classList.remove('text-stone-400', 'hover:text-stone-200');
+                }
+                updateHoverPreviewMesh();
+            }
+
+            toolPlaceBtn.addEventListener('click', () => setToolMode('place'));
+            toolInteractBtn.addEventListener('click', () => setToolMode('interact'));
+            toolDestroyBtn.addEventListener('click', () => setToolMode('destroy'));
+
+            document.getElementById('preset-selector').addEventListener('change', (e) => {
+                const val = e.target.value;
+                if (val) loadPreset(val);
+            });
+
+            document.getElementById('active-layer').addEventListener('input', (e) => {
+                updateLayerHeight(e.target.value);
+            });
+
+            document.getElementById('placement-direction').addEventListener('change', (e) => {
+                placementDir = e.target.value;
+                updateHoverPreviewMesh();
+            });
+
+            document.getElementById('repeater-delay').addEventListener('change', (e) => {
+                repeaterDelay = e.target.value;
+                updateHoverPreviewMesh();
+            });
+
+            document.getElementById('sim-speed').addEventListener('input', (e) => {
+                const rtSpeed = e.target.value;
+                document.getElementById('speed-label').innerText = rtSpeed + " T/S";
+                if (isSimulating) {
+                    pauseSimulation();
+                    startSimulation();
+                }
+            });
+
+            document.getElementById('btn-play').addEventListener('click', startSimulation);
+            document.getElementById('btn-pause').addEventListener('click', pauseSimulation);
+            document.getElementById('btn-step').addEventListener('click', runSingleSimStep);
+            document.getElementById('btn-reset').addEventListener('click', resetSimulation);
+            
+            document.getElementById('btn-clear').addEventListener('click', () => {
+                resetSimulation();
+                for (let key in meshes) {
+                    scene.remove(meshes[key]);
+                }
+                grid = {};
+                meshes = {};
+                propagateRedstoneSignals();
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'r' || e.key === 'R') {
+                    const dirs = ['north', 'east', 'south', 'west', 'up', 'down'];
+                    let idx = dirs.indexOf(placementDir);
+                    if (idx !== -1) {
+                        let nextIdx = (idx + 1) % dirs.length;
+                        placementDir = dirs[nextIdx];
+                        document.getElementById('placement-direction').value = placementDir;
+                        updateHoverPreviewMesh();
+                    }
+                }
+            });
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
